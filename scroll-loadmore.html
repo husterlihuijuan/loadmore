@@ -1,0 +1,113 @@
+<!doctype html>
+<head>
+    <meta name="viewport" content="initial-scale=1, user-scalable=0, minimal-ui" charset="UTF-8">
+    <title>点击按钮加载更多</title>
+    <style>
+        *{
+            margin: 5px 2px;
+        }
+        .panel_hd{
+            color:gray;
+            font-size: 16px;
+            padding: 15px;
+        }
+        .items-list{
+
+        }
+        .item_box{
+            border-top: 1px solid lightgray;
+        }
+        .item_box>h4>a{
+            text-decoration: none;
+            font-weight: lighter;
+        }
+        .item_intro{
+            color: #999999;
+            font-size: 16px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+        }
+    </style>
+
+</head>
+<body>
+<div class="content">
+    <div>
+        <div class="panel_hd">文章列表</div>
+        <div class="items-list">
+
+        </div>
+    </div>
+
+
+</div>
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script>
+
+        /*初始化*/
+        var counter = 0; /*计数器*/
+        var pageStart = 0; /*offset*/
+        var pageSize = 7; /*size*/
+        var isEnd = false;/*结束标志*/
+
+        /*首次加载*/
+        getData(pageStart, pageSize);
+
+        /*监听加载更多*/
+        $(window).scroll(function(){
+            if(isEnd == true){
+                return;
+            }
+
+            // 当滚动到最底部以上100像素时， 加载新内容
+            // 核心代码
+            if ($('<span class="hljs-built_in">document</span>').height() - $(this).scrollTop() - $(this).height()<100){
+                counter ++;
+                pageStart = counter * pageSize;
+
+                getData(pageStart, pageSize);
+            }
+
+        });
+
+
+
+        function getData(offset,size) {
+            $.ajax({
+                type: 'GET',
+                url: '', //数据接口 每次都返回全部的数据
+                dataType: 'json',
+                success: function (reponse) {
+
+                    var data = reponse.list;//数据的内容
+                    var sum = reponse.list.length;//总的数据
+
+                    var result = '';
+
+                    /*使用for循环模拟SQL里的limit(offset,size)*/
+                    for (var i = offset; i < (offset + size); i++) {
+                        result += '<div class="item_box">' +
+                            '<h4 class="item_title"><a href="' + data[i].url + '" target="_blank">' + data[i].title + '</a></h4>' +
+                            '<p class="item_intro">' + data[i].desc + '</p>' +
+                            '</div>';
+                    }
+
+                    $('.items-list').append(result);
+
+                    /*******************************************/
+
+                    if ( (offset + size) >= sum){
+                        isEnd = true;//没有更多了
+                    }
+                },
+                error: function () {
+                    alert('请求出错，请重试!');
+                }
+            });
+        }
+</script>
+</body>
+</html>
